@@ -18,3 +18,31 @@ def pregunta_01():
 
 
     """
+    import pandas as pd
+    df = pd.read_fwf(
+        "files/input/clusters_report.txt",
+        widths=[9, 16, 16, 80],
+        header=None,
+        names=[
+            "cluster", 
+            "cantidad_de_palabras_clave", 
+            "porcentaje_de_palabras_clave", 
+            "principales_palabras_clave"
+        ],
+        skiprows=4 
+    )
+
+    col_agrupacion = ["cluster", "cantidad_de_palabras_clave", "porcentaje_de_palabras_clave"]
+    df[col_agrupacion] = df[col_agrupacion].ffill()
+
+    df = df.groupby(col_agrupacion)["principales_palabras_clave"].apply(lambda x: " ".join(x)).reset_index()
+
+    df["principales_palabras_clave"] = df["principales_palabras_clave"].str.replace(r"\s+", " ", regex=True).str.strip()
+    df["principales_palabras_clave"] = df["principales_palabras_clave"].str.replace(r"\.$", "", regex=True)
+
+    df["cluster"] = df["cluster"].astype(int)
+    df["cantidad_de_palabras_clave"] = df["cantidad_de_palabras_clave"].astype(int)
+    
+    df["porcentaje_de_palabras_clave"] = df["porcentaje_de_palabras_clave"].astype(str).str.replace("%", "").str.replace(",", ".").str.strip().astype(float)
+
+    return df
